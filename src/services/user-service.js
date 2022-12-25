@@ -6,12 +6,12 @@ const UserRepository=require('../repository/user-repository');
 
 class UserService{
     constructor(){
-        this.UserRepository=new UserRepository();
+        this.userRepository=new UserRepository();
     }
 
     async create(data){
         try {
-            const user=await this.UserRepository.create(data);
+            const user=await this.userRepository.create(data);
             return user;
         } catch (error) {
             console.log("SOMETHING WENT WRONG IN SERVICE LAYER");
@@ -38,6 +38,25 @@ class UserService{
         }
     }
 
+    async signIn(email,plainPassword){
+        try {
+            //step1->fetch the user by email
+            const result=await this.userRepository.getByEmail(email);
+            //step2->commpare icomin plainPassword with encryptedPassword
+            const passwordMatch=this.checkPassword(plainPassword,user.password);
+            if(!passwordMatch){
+                console.log("password doesn't match");
+                throw{eror:'incorrect password'};
+            }
+            //step3-> if password match create and return the jwtToken to the user
+            const newJWT=this.createToken({email: user.email,id:user.id});
+            return newJWT;
+        } catch (error) {
+            console.log("SOMETHING WENT WRONG IN SIGNIN PROCESS");
+            throw(error);
+        }
+    }
+
     verifyToken(token){
         try {
             const result=jwt.verify(token,JWT_KEY);
@@ -48,7 +67,7 @@ class UserService{
         }
     }
 
-    verifyToken(userInputPlainPassword, encryptedPAssword){
+    checkPassword(userInputPlainPassword, encryptedPAssword){
         try {
             return bcrypt.commpareSync(userInputPlainPassword,encryptedPAssword);
         } catch (error) {
