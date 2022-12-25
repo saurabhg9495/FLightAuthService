@@ -1,4 +1,5 @@
 const jwt=require('jsonwebtoken');
+const bcrypt=require('bcrypt');
 const{JWT_KEY}=require('../config/server-config');
 
 const UserRepository=require('../repository/user-repository');
@@ -43,6 +44,15 @@ class UserService{
             return result;
         } catch (error) {
             console.log("SOMETHING WENT WRONG IN TOKEN VALIDATION",error);
+            throw(error);
+        }
+    }
+
+    verifyToken(userInputPlainPassword, encryptedPAssword){
+        try {
+            return bcrypt.commpareSync(userInputPlainPassword,encryptedPAssword);
+        } catch (error) {
+            console.log("SOMETHING WENT WRONG IN PASSWORD VERIFICATION",error);
             throw(error);
         }
     }
